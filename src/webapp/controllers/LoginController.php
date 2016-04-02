@@ -18,7 +18,15 @@ class LoginController extends Controller
             $this->app->flash('info', 'You are already logged in as ' . $username);
             $this->app->redirect('/');
         } else {
-            $this->render('login.twig', ['title'=>"Login"]);
+
+            if(empty($_SESSION['token'])) {
+                if(function_exists('mcrypt_create_iv')) {
+                    $_SESSION['token'] = bin2hex(mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+                } else {
+                    $_SESSION['token'] = bin2hex(openssl_random_pseudo_bytes(32));
+                }
+            }
+            $this->render('login.twig', ['title'=>"Login", 'token' => $_SESSION['token'], ]);
         }
     }
 
