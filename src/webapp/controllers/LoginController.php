@@ -35,16 +35,26 @@ class LoginController extends Controller
         $request = $this->app->request;
         $username = $request->post('username');
         $password = $request->post('password');
+        $token = $request->post('token');
 
-        if ( Auth::checkCredentials($username, $password) ) {
-            $user = User::findByUser($username);
-            $_SESSION['userid'] = $user->getId();
-            $this->app->flash('info', "You are now successfully logged in as " . $user->getUsername() . ".");
-            $this->app->redirect('/');
+        if(!empty($token)) {
+            if(hash_equals($token, $_SESSION['token'])) {
+                if ( Auth::checkCredentials($username, $password) ) {
+                    $user = User::findByUser($username);
+                    $_SESSION['userid'] = $user->getId();
+                    $this->app->flash('info', "You are now successfully logged in as " . $user->getUsername() . ".");
+                    $this->app->redirect('/');
+                } else {
+                    $this->app->flashNow('error', 'Incorrect username/password combination.');
+                    $this->render('login.twig', []);
+                }
+            }
         } else {
-            $this->app->flashNow('error', 'Incorrect username/password combination.');
+            $this->app->flashNow('error', 'Really?');
             $this->render('login.twig', []);
         }
+
+
     }
 
     function logout()
