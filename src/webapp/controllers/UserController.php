@@ -23,32 +23,34 @@ class UserController extends Controller
         }
     }
 
-    function create()		  
+    function create()
     {
         $request = $this->app->request;
         $username = $request->post('username');
         $password = $request->post('password');
 
-        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-        $user = User::makeEmpty();
-        $user->setUsername($username);
-        $user->setPassword($hashedPassword);
+        if (User::findByUser($username) != null) {
+            $this->app->flash('info', 'Username already exists. Be more creative!');
+        } else {
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+            $user = User::makeEmpty();
+            $user->setUsername($username);
+            $user->setPassword($hashedPassword);
 
-        if($request->post('email'))
-        {
-          $email = $request->post('email');
-          $user->setEmail($email);
-        }
-        if($request->post('bio'))
-        {
-          $bio = $request->post('bio');
-          $user->setBio($bio);
-        }
+            if ($request->post('email')) {
+                $email = $request->post('email');
+                $user->setEmail($email);
+            }
+            if ($request->post('bio')) {
+                $bio = $request->post('bio');
+                $user->setBio($bio);
+            }
 
-        
-        $user->save();
-        $this->app->flash('info', 'Thanks for creating a user. You may now log in.');
-        $this->app->redirect('/login');
+
+            $user->save();
+            $this->app->flash('info', 'Thanks for creating a user. You may now log in.');
+            $this->app->redirect('/login');
+        }
     }
 
     function delete($tuserid)
