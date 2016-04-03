@@ -39,35 +39,40 @@ class LoginController extends Controller
         $username = $request->post('username');
         $password = $request->post('password');
         $token = $request->post('token');
-
+        
+        // Check if username is empty
         if(!empty($username) || !empty($password)) {
+            
+            // Validate fields
             $username = htmlspecialchars(stripslashes(trim($username)));
             $password = htmlspecialchars(stripslashes(trim($password)));
+            
+            // Token has to exist
+            if(!empty($token)) {
+                if(hash_equals($token, $_SESSION['token'])) {
+                    if ( Auth::checkCredentials($username, $password) ) {
+                        $user = User::findByUser($username);
+                        $_SESSION['userid'] = $user->getId();
+                        setcookie('username', $username, time()+3600*24*30,"/");
+                        $this->app->flash('info', "You are now successfully logged in as " . $user->getUsername() . ".");
+                        $this->app->redirect('/');
+                    } else {
+                        $this->app->flashNow('error', 'Incorrect username/password combination.');
+                        $this->render('login.twig', []);
+                    }
+                }
+                else {
+                    $this->app->flashNow('error', 'Really?');
+                    $this->render('login.twig', []);
+                }
+            } else {
+                $this->app->flashNow('error', 'Mr. Willhelmsen, you sir, are not welcome here! YOU SHALL NOT PASS!');
+                $this->render('login.twig', []);
+            }
         } else {
             $this->app->flashNow('error', 'Invalid login credentials!');
             $this->render('login.twig', []);
         }
-        
-        if(!empty($token)) {
-            if(hash_equals($token, $_SESSION['token'])) {
-                if ( Auth::checkCredentials($username, $password) ) {
-                    $user = User::findByUser($username);
-                    $_SESSION['userid'] = $user->getId();
-                    setcookie('username', $username, time()+3600*24*30,"/");
-                    $this->app->flash('info', "You are now successfully logged in as " . $user->getUsername() . ".");
-                    $this->app->redirect('/');
-                } else {
-                    $this->app->flashNow('error', 'Incorrect username/password combination.');
-                    $this->render('login.twig', []);
-                }
-            }
-            else {
-                $this->app->flashNow('error', 'Really?');
-                $this->render('login.twig', []);
-            }
-        }
-        $this->app->flashNow('error', 'Mr. Willhelmsen, you sir, are not welcome here! YOU SHALL NOT PASS!');
-        $this->render('login.twig', []);
     }
 
     function logout()
