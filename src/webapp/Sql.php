@@ -30,8 +30,8 @@ class Sql
         $hash1 = password_hash("admin123", PASSWORD_DEFAULT);
         $hash2 = password_hash("bob123", PASSWORD_DEFAULT);
 
-        $q1 = "INSERT INTO users(username, password, isadmin) VALUES ('admin', $hash1 , 1)";
-        $q2 = "INSERT INTO users(username, password) VALUES ('bob', $hash2)";
+        $q1 = "INSERT INTO users(username, password, isadmin) VALUES ('admin', '".$hash1."' , 1)";
+        $q2 = "INSERT INTO users(username, password) VALUES ('bob', '".$hash2."')";
 
         self::$pdo->exec($q1);
         self::$pdo->exec($q2);
