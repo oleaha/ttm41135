@@ -8,12 +8,12 @@
 
     {{ flash.error|raw }} <br />
 
-    <form action="" method="POST">
+    <form action="/login" method="POST">
         <input type="hidden" name="token" value="{{ token }}">
         <label>Username: </label>
         <input type="text" name="username"> <br />
         <label>Password: </label>
-        <input type="text" name="password"> <br />
+        <input type="password" name="password"> <br />
         <input type="submit" name="submit" value="Log in">
     </form>
 {% endblock %}

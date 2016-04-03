@@ -49,8 +49,12 @@ class LoginController extends Controller
                     $this->render('login.twig', []);
                 }
             }
+            else {
+                $this->app->flashNow('error', 'Really?');
+                $this->render('login.twig', []);
+            }
         } else {
-            $this->app->flashNow('error', 'Really?');
+            $this->app->flashNow('error', 'Mr. Willhelmsen, you sir, are not welcome here! YOU SHALL NOT PASS!');
             $this->render('login.twig', []);
         }
 
@@ -62,6 +66,7 @@ class LoginController extends Controller
         Auth::logout();
         $this->app->flashNow('info', 'Logged out successfully!!');
         $this->render('base.twig', []);
+        session_destroy();
         return;
        
     }
