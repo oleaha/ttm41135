@@ -26,7 +26,7 @@ class LoginController extends Controller
                     $_SESSION['token'] = bin2hex(openssl_random_pseudo_bytes(32));
                 }
             }
-            $this->render('login.twig', ['title'=>"Login", 'token' => $_SESSION['token'], ]);
+            $this->render('login.twig', ['title'=>"Login", 'token' => $_SESSION['token'], 'username' => $_COOKIE['username']]);
         }
     }
 
@@ -42,6 +42,7 @@ class LoginController extends Controller
                 if ( Auth::checkCredentials($username, $password) ) {
                     $user = User::findByUser($username);
                     $_SESSION['userid'] = $user->getId();
+                    setcookie('username', $username, time()+3600*24*30,"/");
                     $this->app->flash('info', "You are now successfully logged in as " . $user->getUsername() . ".");
                     $this->app->redirect('/');
                 } else {
