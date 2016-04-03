@@ -23,11 +23,18 @@ class UserController extends Controller
         }
     }
 
+
+
     function create()
     {
         $request = $this->app->request;
         $username = $request->post('username');
         $password = $request->post('password');
+
+        if(!validateString($username) || !validateString($password)){
+            $this->app->flash('error', 'Username and Password can not be empty');
+            $this->app->redirect('/register');
+        }
 
         if (User::findByUser($username) != null) {
             $this->app->flash('error', 'Username already exists. Be more creative!');
@@ -189,6 +196,10 @@ class UserController extends Controller
             $this->app->flash('info', 'You do not have access this resource. You are logged in as ' . $username);
             $this->app->redirect('/');
         }
+    }
+
+    function validateString($string){
+        return $string != null and strlen($string) > 0;
     }
 
 }
