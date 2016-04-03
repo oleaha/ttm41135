@@ -40,6 +40,14 @@ class LoginController extends Controller
         $password = $request->post('password');
         $token = $request->post('token');
 
+        if(!empty($username) || !empty($password)) {
+            $username = htmlspecialchars(stripslashes(trim($username)));
+            $password = htmlspecialchars(stripslashes(trim($password)));
+        } else {
+            $this->app->flashNow('error', 'Invalid login credentials!');
+            $this->render('login.twig', []);
+        }
+        
         if(!empty($token)) {
             if(hash_equals($token, $_SESSION['token'])) {
                 if ( Auth::checkCredentials($username, $password) ) {
@@ -57,20 +65,17 @@ class LoginController extends Controller
                 $this->app->flashNow('error', 'Really?');
                 $this->render('login.twig', []);
             }
-        } else {
-            $this->app->flashNow('error', 'Mr. Willhelmsen, you sir, are not welcome here! YOU SHALL NOT PASS!');
-            $this->render('login.twig', []);
         }
-
-
+        $this->app->flashNow('error', 'Mr. Willhelmsen, you sir, are not welcome here! YOU SHALL NOT PASS!');
+        $this->render('login.twig', []);
     }
 
     function logout()
-    {   
+    {
         Auth::logout();
         $this->app->flashNow('info', 'Logged out successfully!!');
         $this->render('base.twig', []);
         return;
-       
+
     }
 }
