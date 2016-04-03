@@ -31,7 +31,7 @@ class UserController extends Controller
         $username = $request->post('username');
         $password = $request->post('password');
 
-        if(!validateString($username) || !validateString($password)){
+        if(!$this->validateString($username) || !$this->validateString($password)){
             $this->app->flash('error', 'Username and Password can not be empty');
             $this->app->redirect('/register');
         }
