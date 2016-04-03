@@ -27,3 +27,4 @@ In order to have a stable master all new features should be tested in a new bran
 - Restart apache: `apachectl stop` and `apachectl start`
 - See your code fail!
 - REMEMBER! Switch back to master when you are done! `git checkout master` and restart apache. 
+- Now, if your shit works we can merge it into master. Ask @oleaha how this is done!
