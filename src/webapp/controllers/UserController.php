@@ -30,7 +30,8 @@ class UserController extends Controller
         $password = $request->post('password');
 
         if (User::findByUser($username) != null) {
-            $this->app->flash('info', 'Username already exists. Be more creative!');
+            $this->app->flash('error', 'Username already exists. Be more creative!');
+            $this->app->redirect('/register');
         } else {
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
             $user = User::makeEmpty();
