@@ -26,12 +26,9 @@ class LoginController extends Controller
                     $_SESSION['token'] = bin2hex(openssl_random_pseudo_bytes(32));
                 }
             }
+            // (condition) ? true : false
+            $username = (isset($_COOKIE['username'])) ? $_COOKIE['username'] : "";
 
-            if(isset($_COOKIE['username'])) {
-                $username = $_COOKIE['username'];
-            } else {
-                $username = "";
-            }
             $this->render('login.twig', ['title'=>"Login", 'token' => $_SESSION['token'], 'username' => $username, ]);
         }
     }
