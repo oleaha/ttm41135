@@ -66,7 +66,6 @@ class LoginController extends Controller
         Auth::logout();
         $this->app->flashNow('info', 'Logged out successfully!!');
         $this->render('base.twig', []);
-        session_destroy();
         return;
        
     }
