@@ -39,14 +39,17 @@ class LoginController extends Controller
         $username = $request->post('username');
         $password = $request->post('password');
         $token = $request->post('token');
-        
+
         // Check if username is empty
-        if(!empty($username) || !empty($password)) {
-            
+        if(empty($username) || empty($password)) {
+            $this->app->flashNow('error', 'Invalid login credentials!');
+            $this->render('login.twig', []);
+        }
+        else {
             // Validate fields
             $username = htmlspecialchars(stripslashes(trim($username)));
             $password = htmlspecialchars(stripslashes(trim($password)));
-            
+
             // Token has to exist
             if(!empty($token)) {
                 if(hash_equals($token, $_SESSION['token'])) {
@@ -69,9 +72,6 @@ class LoginController extends Controller
                 $this->app->flashNow('error', 'Mr. Willhelmsen, you sir, are not welcome here! YOU SHALL NOT PASS!');
                 $this->render('login.twig', []);
             }
-        } else {
-            $this->app->flashNow('error', 'Invalid login credentials!');
-            $this->render('login.twig', []);
         }
     }
 
