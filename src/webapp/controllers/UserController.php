@@ -29,10 +29,10 @@ class UserController extends Controller
         $username = $request->post('username');
         $password = $request->post('password');
 
-
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
         $user = User::makeEmpty();
         $user->setUsername($username);
-        $user->setPassword($password);
+        $user->setPassword($hashedPassword);
 
         if($request->post('email'))
         {
