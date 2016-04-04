@@ -12,7 +12,7 @@ class UserController extends Controller
         parent::__construct();
     }
 
-    function index()     
+    function index()
     {
         if (Auth::guest()) {
 
@@ -97,41 +97,25 @@ class UserController extends Controller
 
     function deleteMultiple()
     {
-      if(Auth::isAdmin()){
-          $request = $this->app->request;
-          $userlist = $request->post('userlist'); 
-          $deleted = [];
+        if(Auth::isAdmin()){
+            $request = $this->app->request;
+            $userlist = $request->post('userlist');
+            $deleted = [];
 
-          if($userlist == NULL){
-              $this->app->flash('info','No user to be deleted.');
-          } else {
-               foreach( $userlist as $duserid)
-               {
+            if($userlist == NULL){
+                $this->app->flash('info','No user to be deleted.');
+            } else {
+                foreach( $userlist as $duserid)
+                {
                     $user = User::findById($duserid);
                     if(  $user->delete() == 1) { //1 row affect by delete, as expect..
-                      $deleted[] = $user->getId();
+                        $deleted[] = $user->getId();
                     }
-               }
-               $this->app->flash('info', 'Users with IDs  ' . implode(',',$deleted) . ' have been deleted.');
-          }
+                }
+                $this->app->flash('info', 'Users with IDs  ' . implode(',',$deleted) . ' have been deleted.');
+            }
 
-          $this->app->redirect('/admin');
-      } else {
-          $username = Auth::user()->getUserName();
-          $this->app->flash('info', 'You do not have access this resource. You are logged in as ' . $username);
-          $this->app->redirect('/');
-      }
-    }
-
-
-    function show($tuserid)   
-    {
-        if(Auth::userAccess($tuserid))
-        {
-          $user = User::findById($tuserid);
-          $this->render('showuser.twig', [
-            'user' => $user
-          ]);
+            $this->app->redirect('/admin');
         } else {
             $username = Auth::user()->getUserName();
             $this->app->flash('info', 'You do not have access this resource. You are logged in as ' . $username);
@@ -139,8 +123,30 @@ class UserController extends Controller
         }
     }
 
+
+    function show($tuserid)
+    {
+        if(Auth::userAccess($tuserid))
+        {
+            $user = User::findById($tuserid);
+            $this->render('showuser.twig', [
+                'user' => $user
+            ]);
+        } else {
+            if(Auth::guest()) {
+                // Hack
+                $this->app->flash('info', 'You are not logged in!');
+                $this->app->redirect('/');
+            } else {
+                $username = Auth::user()->getUserName();
+                $this->app->flash('info', 'You do not have access this resource. You are logged in as ' . $username);
+                $this->app->redirect('/');
+            }
+        }
+    }
+
     function newuser()
-    { 
+    {
 
         $user = User::makeEmpty();
 
@@ -155,7 +161,7 @@ class UserController extends Controller
             $bio = $request->post('bio');
 
             $isAdmin = ($request->post('isAdmin') != null);
-            
+
 
             $user->setUsername($username);
             $user->setPassword($password);
@@ -176,8 +182,8 @@ class UserController extends Controller
         }
     }
 
-    function edit($tuserid)    
-    { 
+    function edit($tuserid)
+    {
 
         $user = User::findById($tuserid);
 
@@ -194,7 +200,7 @@ class UserController extends Controller
             $bio = $request->post('bio');
 
             $isAdmin = ($request->post('isAdmin') != null);
-            
+
 
             $user->setUsername($username);
             $user->setPassword($password);

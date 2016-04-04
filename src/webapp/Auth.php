@@ -67,6 +67,10 @@ class Auth
      */
     static function userAccess($tuserid)
     {
+        // If a user has the correct certificate, but not logged in.
+        if(self::guest()) {
+            return false;
+        }
         if(self::user()->getId() == $tuserid)   //a user can change their account
         {
             return true;
