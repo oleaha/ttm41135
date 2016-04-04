@@ -2,12 +2,15 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 $templatedir =  __DIR__.'/webapp/templates/';
+
 $app = new \Slim\Slim([
     'debug' => true,
     'templates.path' => $templatedir,
     'view' => new \Slim\Views\Twig($templatedir
   )
 ]);
+
+
 $view = $app->view();
 $view->parserExtensions = array(
     new \Slim\Views\TwigExtension(),
