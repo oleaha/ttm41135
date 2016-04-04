@@ -9,7 +9,6 @@
     {{ flash.error|raw }} <br />
 
     <form action="/login" method="POST">
-        <input type="hidden" name="token" value="{{ token }}">
         <label>Username: </label>
         <input type="text" name="username" value="{{ username }}"> <br />
         <label>Password: </label>
