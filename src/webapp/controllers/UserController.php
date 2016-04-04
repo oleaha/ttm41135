@@ -15,7 +15,18 @@ class UserController extends Controller
     function index()     
     {
         if (Auth::guest()) {
-            $this->render('newUserForm.twig', []);
+
+            // Check if CSRF token exists
+            if (empty($_SESSION['token'])) {
+                // Create CSRF token
+                if (function_exists('mcrypt_create_iv')) {
+                    $_SESSION['token'] = bin2hex(mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+                } else {
+                    $_SESSION['token'] = bin2hex(openssl_random_pseudo_bytes(32));
+                }
+            }
+
+            $this->render('newUserForm.twig', ['token' => $_SESSION['token']]);
         } else {
             $username = Auth::user()->getUserName();
             $this->app->flash('info', 'You are already logged in as ' . $username);
@@ -30,35 +41,43 @@ class UserController extends Controller
         $request = $this->app->request;
         $username = $request->post('username');
         $password = $request->post('password');
+        $token = $request->post('csrf');
 
-        if(!$this->validateString($username) || !$this->validateString($password)){
-            $this->app->flash('error', 'Username and Password can not be empty');
-            $this->app->redirect('/register');
-        }
+        if(isset($token) && hash_equals($token, $_SESSION['token'])) {
+            if(!$this->validateString($username) || !$this->validateString($password)){
+                $this->app->flash('error', 'Username and Password can not be empty');
+                $this->app->redirect('/register');
+            }
 
-        if (User::findByUser($username) != null) {
-            $this->app->flash('error', 'Username already exists. Be more creative!');
-            $this->app->redirect('/register');
+            if (User::findByUser($username) != null) {
+                $this->app->flash('error', 'Username already exists. Be more creative!');
+                $this->app->redirect('/register');
+            } else {
+                $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+                $user = User::makeEmpty();
+                $user->setUsername($username);
+                $user->setPassword($hashedPassword);
+
+                if ($request->post('email')) {
+                    $email = $request->post('email');
+                    $user->setEmail($email);
+                }
+                if ($request->post('bio')) {
+                    $bio = $request->post('bio');
+                    $user->setBio($bio);
+                }
+
+
+                $user->save();
+                $this->app->flash('info', 'Thanks for creating a user. You may now log in.');
+                $this->app->redirect('/login');
+            }
         } else {
-            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-            $user = User::makeEmpty();
-            $user->setUsername($username);
-            $user->setPassword($hashedPassword);
-
-            if ($request->post('email')) {
-                $email = $request->post('email');
-                $user->setEmail($email);
-            }
-            if ($request->post('bio')) {
-                $bio = $request->post('bio');
-                $user->setBio($bio);
-            }
-
-
-            $user->save();
-            $this->app->flash('info', 'Thanks for creating a user. You may now log in.');
-            $this->app->redirect('/login');
+            $this->app->flash('error', 'Mr. Willhelmsen, you sir, are not welcome here! YOU SHALL NOT PASS!');
+            $this->app->redirect('/register');
         }
+
+
     }
 
     function delete($tuserid)
