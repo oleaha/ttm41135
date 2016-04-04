@@ -2,3 +2,4 @@
 .DS_Store
 src/webapp/Auth.php
 src/webapp/Sql.php
+database.db
