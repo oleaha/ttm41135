@@ -10,6 +10,7 @@
 
     <form action="/login" method="POST">
         <input type="hidden" name="csrf" value="{{ token }}">
+        <input type="hidden" name="{{ csrf_key }}" value="{{ csrf_token }}">
         <label>Username: </label>
         <input type="text" name="username" value="{{ username }}"> <br />
         <label>Password: </label>

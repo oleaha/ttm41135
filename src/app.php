@@ -10,6 +10,8 @@ $app = new \Slim\Slim([
   )
 ]);
 
+// CSRF Guard Middleware
+$app->add(new \Slim\Middleware\CsrfGuard());
 
 $view = $app->view();
 $view->parserExtensions = array(
@@ -29,6 +31,7 @@ try {
     echo $e->getMessage();
     exit();
 }
+
 
 
 $ns ='ttm4135\\webapp\\controllers\\';
