@@ -19,13 +19,16 @@ class LoginController extends Controller
             $this->app->redirect('/');
         } else {
 
-            if(empty($_SESSION['token'])) {
-                if(function_exists('mcrypt_create_iv')) {
+            // Check if CSRF token exists
+            if (empty($_SESSION['token'])) {
+                // Create CSRF token
+                if (function_exists('mcrypt_create_iv')) {
                     $_SESSION['token'] = bin2hex(mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
                 } else {
                     $_SESSION['token'] = bin2hex(openssl_random_pseudo_bytes(32));
                 }
             }
+
             // (condition) ? true : false
             $username = (isset($_COOKIE['username'])) ? $_COOKIE['username'] : "";
 
@@ -38,41 +41,44 @@ class LoginController extends Controller
         $request = $this->app->request;
         $username = $request->post('username');
         $password = $request->post('password');
-        $token = $request->post('token');
+        $token = $request->post('csrf');
 
-        // Check if username is empty
-        if(empty($username) || empty($password)) {
-            $this->app->flashNow('error', 'Invalid login credentials!');
-            $this->render('login.twig', []);
-        }
-        else {
-            // Validate fields
-            $username = htmlspecialchars(stripslashes(trim($username)));
-            $password = htmlspecialchars(stripslashes(trim($password)));
 
-            // Token has to exist
-            if(!empty($token)) {
-                if(hash_equals($token, $_SESSION['token'])) {
-                    if ( Auth::checkCredentials($username, $password) ) {
-                        $user = User::findByUser($username);
-                        $_SESSION['userid'] = $user->getId();
-                        setcookie('username', $username, time()+3600*24*30,"/");
-                        $this->app->flash('info', "You are now successfully logged in as " . $user->getUsername() . ".");
-                        $this->app->redirect('/');
-                    } else {
-                        $this->app->flashNow('error', 'Incorrect username/password combination.');
-                        $this->render('login.twig', []);
-                    }
+        // Check for CSRF
+        if(isset($token) && hash_equals($token, $_SESSION['token'])) {
+            // Validate input before processing
+            if($this->validateAndStrip($username) && $this->validateAndStrip($password)) {
+                // Validate user
+                if(Auth::checkCredentials($username, $password)) {
+                    $user = User::findByUser($username);
+                    $_SESSION['userid'] = $user->getId();
+
+                    // Create cookie with username for memory
+                    setcookie('username', $username, time()+3600*24*30,"/");
+
+                    $this->app->flash('info', "You are now successfully logged in as " . $user->getUsername() . ".");
+                    $this->app->redirect('/');
                 }
                 else {
-                    $this->app->flashNow('error', 'Really?');
-                    $this->render('login.twig', []);
+                    $username = (isset($_COOKIE['username'])) ? $_COOKIE['username'] : "";
+
+                    $this->app->flashNow('error', 'Incorrect username/password combination.');
+                    $this->render('login.twig', ['username' => $username, 'token' => $_SESSION['token']]);
                 }
-            } else {
-                $this->app->flashNow('error', 'Mr. Willhelmsen, you sir, are not welcome here! YOU SHALL NOT PASS!');
-                $this->render('login.twig', []);
+            }
+            else {
+                $username = (isset($_COOKIE['username'])) ? $_COOKIE['username'] : "";
+                $this->app->flashNow('error', 'Invalid login credentials');
+                $this->render('login.twig', ['username' => $username, 'token' => $_SESSION['token']]);
             }
         }
+        else {
+            $username = (isset($_COOKIE['username'])) ? $_COOKIE['username'] : "";
+            $this->app->flashNow('error', 'Mr. Willhelmsen, you sir, are not welcome here! YOU SHALL NOT PASS!');
+            $this->render('login.twig', ['username' => $username, 'token' => $_SESSION['token']]);
+        }
+
+
     }
 
     function logout()
@@ -82,5 +88,12 @@ class LoginController extends Controller
         $this->render('base.twig', []);
         return;
 
+    }
+
+    function validateAndStrip($string) {
+        if(!empty($string)) {
+            return htmlspecialchars(stripslashes(trim($string)));
+        }
+        return false;
     }
 }

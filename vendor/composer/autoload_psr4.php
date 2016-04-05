@@ -8,4 +8,5 @@ $baseDir = dirname($vendorDir);
 return array(
     'ttm4135\\' => array($baseDir . '/src'),
     'Slim\\Views\\' => array($vendorDir . '/slim/views'),
+    'Psr\\Http\\Message\\' => array($vendorDir . '/psr/http-message/src'),
 );

@@ -12,10 +12,21 @@ class UserController extends Controller
         parent::__construct();
     }
 
-    function index()     
+    function index()
     {
         if (Auth::guest()) {
-            $this->render('newUserForm.twig', []);
+
+            // Check if CSRF token exists
+            if (empty($_SESSION['token'])) {
+                // Create CSRF token
+                if (function_exists('mcrypt_create_iv')) {
+                    $_SESSION['token'] = bin2hex(mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+                } else {
+                    $_SESSION['token'] = bin2hex(openssl_random_pseudo_bytes(32));
+                }
+            }
+
+            $this->render('newUserForm.twig', ['token' => $_SESSION['token']]);
         } else {
             $username = Auth::user()->getUserName();
             $this->app->flash('info', 'You are already logged in as ' . $username);
@@ -30,35 +41,43 @@ class UserController extends Controller
         $request = $this->app->request;
         $username = $request->post('username');
         $password = $request->post('password');
+        $token = $request->post('csrf');
 
-        if(!$this->validateString($username) || !$this->validateString($password)){
-            $this->app->flash('error', 'Username and Password can not be empty');
-            $this->app->redirect('/register');
-        }
+        if(isset($token) && hash_equals($token, $_SESSION['token'])) {
+            if(!$this->validateString($username) || !$this->validateString($password)){
+                $this->app->flash('error', 'Username and Password can not be empty');
+                $this->app->redirect('/register');
+            }
 
-        if (User::findByUser($username) != null) {
-            $this->app->flash('error', 'Username already exists. Be more creative!');
-            $this->app->redirect('/register');
+            if (User::findByUser($username) != null) {
+                $this->app->flash('error', 'Username already exists. Be more creative!');
+                $this->app->redirect('/register');
+            } else {
+                $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+                $user = User::makeEmpty();
+                $user->setUsername($username);
+                $user->setPassword($hashedPassword);
+
+                if ($request->post('email')) {
+                    $email = $request->post('email');
+                    $user->setEmail($email);
+                }
+                if ($request->post('bio')) {
+                    $bio = $request->post('bio');
+                    $user->setBio($bio);
+                }
+
+
+                $user->save();
+                $this->app->flash('info', 'Thanks for creating a user. You may now log in.');
+                $this->app->redirect('/login');
+            }
         } else {
-            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-            $user = User::makeEmpty();
-            $user->setUsername($username);
-            $user->setPassword($hashedPassword);
-
-            if ($request->post('email')) {
-                $email = $request->post('email');
-                $user->setEmail($email);
-            }
-            if ($request->post('bio')) {
-                $bio = $request->post('bio');
-                $user->setBio($bio);
-            }
-
-
-            $user->save();
-            $this->app->flash('info', 'Thanks for creating a user. You may now log in.');
-            $this->app->redirect('/login');
+            $this->app->flash('error', 'Mr. Willhelmsen, you sir, are not welcome here! YOU SHALL NOT PASS!');
+            $this->app->redirect('/register');
         }
+
+
     }
 
     function delete($tuserid)
@@ -78,41 +97,25 @@ class UserController extends Controller
 
     function deleteMultiple()
     {
-      if(Auth::isAdmin()){
-          $request = $this->app->request;
-          $userlist = $request->post('userlist'); 
-          $deleted = [];
+        if(Auth::isAdmin()){
+            $request = $this->app->request;
+            $userlist = $request->post('userlist');
+            $deleted = [];
 
-          if($userlist == NULL){
-              $this->app->flash('info','No user to be deleted.');
-          } else {
-               foreach( $userlist as $duserid)
-               {
+            if($userlist == NULL){
+                $this->app->flash('info','No user to be deleted.');
+            } else {
+                foreach( $userlist as $duserid)
+                {
                     $user = User::findById($duserid);
                     if(  $user->delete() == 1) { //1 row affect by delete, as expect..
-                      $deleted[] = $user->getId();
+                        $deleted[] = $user->getId();
                     }
-               }
-               $this->app->flash('info', 'Users with IDs  ' . implode(',',$deleted) . ' have been deleted.');
-          }
+                }
+                $this->app->flash('info', 'Users with IDs  ' . implode(',',$deleted) . ' have been deleted.');
+            }
 
-          $this->app->redirect('/admin');
-      } else {
-          $username = Auth::user()->getUserName();
-          $this->app->flash('info', 'You do not have access this resource. You are logged in as ' . $username);
-          $this->app->redirect('/');
-      }
-    }
-
-
-    function show($tuserid)   
-    {
-        if(Auth::userAccess($tuserid))
-        {
-          $user = User::findById($tuserid);
-          $this->render('showuser.twig', [
-            'user' => $user
-          ]);
+            $this->app->redirect('/admin');
         } else {
             $username = Auth::user()->getUserName();
             $this->app->flash('info', 'You do not have access this resource. You are logged in as ' . $username);
@@ -120,8 +123,30 @@ class UserController extends Controller
         }
     }
 
+
+    function show($tuserid)
+    {
+        if(Auth::userAccess($tuserid))
+        {
+            $user = User::findById($tuserid);
+            $this->render('showuser.twig', [
+                'user' => $user
+            ]);
+        } else {
+            if(Auth::guest()) {
+                // Hack
+                $this->app->flash('info', 'You are not logged in!');
+                $this->app->redirect('/');
+            } else {
+                $username = Auth::user()->getUserName();
+                $this->app->flash('info', 'You do not have access this resource. You are logged in as ' . $username);
+                $this->app->redirect('/');
+            }
+        }
+    }
+
     function newuser()
-    { 
+    {
 
         $user = User::makeEmpty();
 
@@ -136,7 +161,7 @@ class UserController extends Controller
             $bio = $request->post('bio');
 
             $isAdmin = ($request->post('isAdmin') != null);
-            
+
 
             $user->setUsername($username);
             $user->setPassword($password);
@@ -157,8 +182,8 @@ class UserController extends Controller
         }
     }
 
-    function edit($tuserid)    
-    { 
+    function edit($tuserid)
+    {
 
         $user = User::findById($tuserid);
 
@@ -175,7 +200,7 @@ class UserController extends Controller
             $bio = $request->post('bio');
 
             $isAdmin = ($request->post('isAdmin') != null);
-            
+
 
             $user->setUsername($username);
             $user->setPassword($password);

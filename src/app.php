@@ -2,12 +2,15 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 $templatedir =  __DIR__.'/webapp/templates/';
+
 $app = new \Slim\Slim([
     'debug' => true,
     'templates.path' => $templatedir,
     'view' => new \Slim\Views\Twig($templatedir
   )
 ]);
+
+
 $view = $app->view();
 $view->parserExtensions = array(
     new \Slim\Views\TwigExtension(),
@@ -19,7 +22,7 @@ $view->parserOptions = array(
 
 try {
     // Create (connect to) SQLite database in file
-    $app->db = new PDO('sqlite:/home/gr20/apache/htdocs/db/secret.db');   //TODO update with location of your database
+    $app->db = new PDO('sqlite:/Users/oleaha/Documents/Code/ttm4135/database.db');   //TODO update with location of your database
     // Set errormode to exceptions
     $app->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch(PDOException $e) {

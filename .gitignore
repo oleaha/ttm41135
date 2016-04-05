@@ -1,4 +1,5 @@
 .idea/
 .DS_Store
-src/webapp/Auth.php
 src/webapp/Sql.php
+src/app.php
+database.db
