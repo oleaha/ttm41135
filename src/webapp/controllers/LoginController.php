@@ -54,7 +54,7 @@ class LoginController extends Controller
                     $_SESSION['userid'] = $user->getId();
 
                     // Create cookie with username for memory
-                    setcookie('username', $username, time()+3600*24*30,"/");
+                    setcookie('username', $username, time()+3600*24*30,"/", null, true, true);
 
                     $this->app->flash('info', "You are now successfully logged in as " . $user->getUsername() . ".");
                     $this->app->redirect('/');
