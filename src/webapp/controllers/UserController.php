@@ -14,6 +14,12 @@ class UserController extends Controller
 
     function index()
     {
+	//var_dump($_SERVER);
+	if ($_SERVER["REDIRECT_SSL_CLIENT_I_DN_CN"] != "Student CA" || $_SERVER["REDIRECT_SSL_CLIENT_I_DN_CN"] != "Staff CA") {
+		$this->app->flash('error', 'You do not have access to this resource!');
+		$this->render('error.twig', []);
+		return;
+	}
         if (Auth::guest()) {
 
             // Check if CSRF token exists
