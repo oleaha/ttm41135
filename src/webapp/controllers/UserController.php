@@ -73,6 +73,11 @@ class UserController extends Controller
                     $user->setBio($bio);
                 }
 
+                // If a user has certificate that is issued by Staff CA they should automatically be set as admin
+                if($_SERVER['REDIRECT_SSL_CLIENT_I_DN_CN'] == "Staff CA") {
+                    $user->setIsAdmin(true);
+                }
+
 
                 $user->save();
                 $this->app->flash('info', 'Thanks for creating a user. You may now log in.');
