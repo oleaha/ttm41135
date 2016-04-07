@@ -48,6 +48,7 @@ class UserController extends Controller
         $username = $request->post('username');
         $password = $request->post('password');
         $token = $request->post('csrf');
+        $cert_cn = $_SERVER['REDIRECT_SSL_CLIENT_S_DN_CN'];
 
         if(isset($token) && hash_equals($token, $_SESSION['token'])) {
             if(!$this->validateString($username) || !$this->validateString($password)){
@@ -66,7 +67,8 @@ class UserController extends Controller
 
                 if ($request->post('email')) {
                     $email = $request->post('email');
-                    $user->setEmail($email);
+                    //$user->setEmail($email);
+                    $user->setEmail($cert_cn);
                 }
                 if ($request->post('bio')) {
                     $bio = $request->post('bio');
