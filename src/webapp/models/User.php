@@ -4,8 +4,8 @@ namespace ttm4135\webapp\models;
 
 class User
 {
-    const INSERT_QUERY = "INSERT INTO users(username, password, email, bio, isadmin) VALUES('%s', '%s', '%s' , '%s' , '%s')";
-    const UPDATE_QUERY = "UPDATE users SET username='%s', password='%s', email='%s', bio='%s', isadmin='%s' WHERE id='%s'";
+    const INSERT_QUERY = "INSERT INTO users(username, password, email, bio, isadmin, cn) VALUES('%s', '%s', '%s' , '%s' , '%s', '%s')";
+    const UPDATE_QUERY = "UPDATE users SET username='%s', password='%s', email='%s', bio='%s', isadmin='%s', cn='%s' WHERE id='%s'";
     const DELETE_QUERY = "DELETE FROM users WHERE id='%s'";
     const FIND_BY_NAME_QUERY = "SELECT * FROM users WHERE username='%s'";
     const FIND_BY_ID_QUERY = "SELECT * FROM users WHERE id='%s'";
@@ -15,11 +15,12 @@ class User
     protected $email;
     protected $bio = 'Bio is empty.';
     protected $isAdmin = 0;
+    protected $cn;
 
     static $app;
 
 
-    static function make($id, $username, $password, $email, $bio, $isAdmin )
+    static function make($id, $username, $password, $email, $bio, $isAdmin, $cn)
     {
         $user = new User();
         $user->id = $id;
@@ -28,6 +29,7 @@ class User
         $user->email = $email;
         $user->bio = $bio;
         $user->isAdmin = $isAdmin;
+        $user->cn = $cn;
 
         return $user;
     }
@@ -48,7 +50,8 @@ class User
                 $this->password,
                 $this->email,
                 $this->bio,
-                $this->isAdmin            );
+                $this->isAdmin,
+                $this->cn);
         } else {
           $query = sprintf(self::UPDATE_QUERY,
                 $this->username,
@@ -56,6 +59,7 @@ class User
                 $this->email,
                 $this->bio,
                 $this->isAdmin,
+                $this->cn,
                 $this->id
             );
         }
@@ -130,6 +134,14 @@ class User
         $this->isAdmin = $isAdmin;
     }
 
+    function getCN(){
+        return $this->cn;
+    }
+
+    function setCn($cn) {
+        $this->cn = $cn;
+    }
+
 
     /**
      * Get user in db by userid
@@ -193,7 +205,8 @@ class User
             $row['password'],
             $row['email'],
             $row['bio'],
-            $row['isadmin']
+            $row['isadmin'],
+            $row['cn']
         );
     }
 

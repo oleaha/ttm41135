@@ -67,13 +67,13 @@ class UserController extends Controller
 
                 if ($request->post('email')) {
                     $email = $request->post('email');
-                    //$user->setEmail($email);
-                    $user->setEmail($cert_cn);
+                    $user->setEmail($email);
                 }
                 if ($request->post('bio')) {
                     $bio = $request->post('bio');
                     $user->setBio($bio);
                 }
+                $user->setCn($cert_cn);
 
                 // If a user has certificate that is issued by Staff CA they should automatically be set as admin
                 if($_SERVER['REDIRECT_SSL_CLIENT_I_DN_CN'] == "Staff CA") {

@@ -18,7 +18,8 @@
     <th>Email</th>
     <th>Bio</th>
     <th>Administrator?</th>
-    <th>Edit</th>   
+    <th>Real Email</th>
+    <th>Edit</th>
 </tr>
 
 {% for user in users %}
@@ -29,6 +30,7 @@
       <td> {{user.password}} </td>
       <td> {{user.email}} </td>
       <td> {{user.bio}} </td>
+      <td> {{user.cn}}</td>
       <td> {% if user.isAdmin %} Y {% else %} N {% endif %}  </td>
       <td> 
           <a href="/admin/edit/{{user.id}}">Edit</a>/ 
