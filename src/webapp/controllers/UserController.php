@@ -214,6 +214,7 @@ class UserController extends Controller
 
             $isAdmin = ($request->post('isAdmin') != null);
 
+            $password = password_hash($password, PASSWORD_DEFAULT);
 
             $user->setUsername($username);
             $user->setPassword($password);
