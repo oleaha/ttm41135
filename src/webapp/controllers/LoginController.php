@@ -39,9 +39,9 @@ class LoginController extends Controller
     function login()
     {
         $request = $this->app->request;
-        $username = $request->post('username');
-        $password = $request->post('password');
-        $token = $request->post('csrf');
+        $username = htmlspecialchars(stripslashes(trim($request->post('username'))));
+        $password = htmlspecialchars(stripslashes(trim($request->post('password'))));
+        $token = htmlspecialchars(stripslashes(trim($request->post('csrf'))));
 
 
         // Check for CSRF
